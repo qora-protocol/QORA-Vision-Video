@@ -34,6 +34,10 @@ model-index:
 
 # QORA-Vision (Video) - Native Rust Video Classifier
 
+<img width="1395" height="926" alt="Screenshot 2026-02-27 174517" src="https://github.com/user-attachments/assets/65a635e4-6233-4fa6-a0ff-2915c3effbef" />
+
+## Downlod 🤗: https://huggingface.co/qoranet/QORA-Vision-Video
+
 Pure Rust video action classification engine based on ViViT. Classifies video clips into 400 action categories from Kinetics-400. No Python runtime, no CUDA, no external dependencies.
 
 ## Overview

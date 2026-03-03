@@ -1,37 +1,3 @@
----
-language:
-  - en
-license: apache-2.0
-tags:
-  - rust
-  - cpu-inference
-  - quantized
-  - q4
-  - video-classification
-  - action-recognition
-  - vivit
-  - video-transformer
-  - pure-rust
-  - no-python
-  - no-cuda
-  - kinetics-400
-base_model: google/vivit-b-16x2-kinetics400
-library_name: qora
-pipeline_tag: video-classification
-model-index:
-  - name: QORA-Vision-Video
-    results:
-      - task:
-          type: video-classification
-        dataset:
-          name: Kinetics-400
-          type: kinetics-400
-        metrics:
-          - name: Top-1 Accuracy
-            type: accuracy
-            value: 79.3
----
-
 # QORA-Vision (Video) - Native Rust Video Classifier
 
 <img width="1395" height="926" alt="Screenshot 2026-02-27 174517" src="https://github.com/user-attachments/assets/65a635e4-6233-4fa6-a0ff-2915c3effbef" />

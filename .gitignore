@@ -1,0 +1,6 @@
+/target
+/.cargo/
+*.exe
+*.qora-vision
+*.png
+test_frames/

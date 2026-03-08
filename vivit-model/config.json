@@ -1,0 +1,13 @@
+{
+  "engine": "qora-vision",
+  "model_type": "qora_vision_vivit",
+  "hidden_size": 768,
+  "num_hidden_layers": 12,
+  "num_attention_heads": 12,
+  "intermediate_size": 3072,
+  "image_size": 224,
+  "num_frames": 32,
+  "tubelet_size": [2, 16, 16],
+  "num_labels": 400,
+  "layer_norm_eps": 1e-6
+}

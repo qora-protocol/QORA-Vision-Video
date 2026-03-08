@@ -1,8 +1,38 @@
+---
+language:
+  - en
+license: apache-2.0
+tags:
+  - rust
+  - cpu-inference
+  - quantized
+  - q4
+  - video-classification
+  - action-recognition
+  - vivit
+  - video-transformer
+  - pure-rust
+  - no-python
+  - no-cuda
+  - kinetics-400
+base_model: google/vivit-b-16x2-kinetics400
+library_name: qora
+pipeline_tag: video-classification
+model-index:
+  - name: QORA-Vision-Video
+    results:
+      - task:
+          type: video-classification
+        dataset:
+          name: Kinetics-400
+          type: kinetics-400
+        metrics:
+          - name: Top-1 Accuracy
+            type: accuracy
+            value: 79.3
+---
+
 # QORA-Vision (Video) - Native Rust Video Classifier
-
-<img width="1395" height="926" alt="Screenshot 2026-02-27 174517" src="https://github.com/user-attachments/assets/65a635e4-6233-4fa6-a0ff-2915c3effbef" />
-
-## Downlod 🤗: https://huggingface.co/qoranet/QORA-Vision-Video
 
 Pure Rust video action classification engine based on ViViT. Classifies video clips into 400 action categories from Kinetics-400. No Python runtime, no CUDA, no external dependencies.
 
@@ -19,7 +49,8 @@ Pure Rust video action classification engine based on ViViT. Classifies video cl
 | **Input** | 32 frames x 224x224 RGB video |
 | **Output** | 768-dim embeddings + 400-class logits |
 | **Classes** | 400 (Kinetics-400 action categories) |
-| **Platform** | Windows x86_64 (CPU-only) |
+| **Platform** | Windows x86_64, Linux x86_64, macOS aarch64 |
+| **GPU** | Vulkan (Win/Linux) / Metal (macOS) — auto-detect with CPU fallback |
 
 ## Architecture
 
@@ -79,26 +110,20 @@ vivit-model/
 ## Usage
 
 ```bash
-# Classify from frame directory
-qora-vision.exe vivit --frames ./my_frames/ --model-path ../ViViT/
+# Classify from frame directory (fast, from binary)
+qora-vision.exe vivit --load model.qora-vision --frames ./my_frames/
 
 # Classify from video file (requires ffmpeg)
-qora-vision.exe vivit --video clip.mp4 --model-path ../ViViT/
-
-# Load from binary
-qora-vision.exe vivit --load model.qora-vision --frames ./my_frames/
+qora-vision.exe vivit --load model.qora-vision --video clip.mp4
 ```
 
 ### CLI Arguments
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--model-path <path>` | `.` | Path to model directory (safetensors) |
 | `--frames <dir>` | - | Directory of 32 JPEG/PNG frames |
 | `--video <file>` | - | Video file (extracts frames via ffmpeg) |
-| `--load <path>` | - | Load binary (.qora-vision) |
-| `--save <path>` | - | Save binary |
-| `--f16` | off | Use F16 weights instead of Q4 |
+| `--load <path>` | `model.qora-vision` | Path to .qora-vision binary |
 
 ### Input Requirements
 
@@ -148,21 +173,20 @@ Top-5 predictions:
 | Tubelets | 3,136 patches |
 | Sequence Length | 3,137 (+ CLS) |
 | Embedding | dim=768, L2 norm=17.0658 |
-| Forward Pass | 1,235.7s (12 layers x 12 heads, 3137x3137 attention) |
-| Model Load | 5.4s (from safetensors) |
+| Forward Pass | ~726s (12 layers x 12 heads, 3137x3137 attention) |
+| Binary Load | 30ms (from .qora-vision) |
 | Model Memory | 60 MB (Q4) |
-| Binary Save | 63ms |
 | Result | PASS (valid predictions with correct logit distribution) |
 
 ### Performance Notes
 
-The long forward pass time (1,235s) is due to the large sequence length (3,137 tokens). Each attention layer computes a 3,137 x 3,137 attention matrix across 12 heads. This is expected for CPU-only inference of a video model — GPU acceleration would dramatically improve this.
+The forward pass time (~726s) is due to the large sequence length (3,137 tokens). Each attention layer computes a 3,137 x 3,137 attention matrix across 12 heads. This is expected for CPU-only inference of a video model — GPU acceleration would dramatically improve this.
 
 | Component | Time |
 |-----------|------|
 | Tubelet Embedding | ~0.1s |
-| Attention (per layer) | ~100s (3137x3137 matrix) |
-| 12 Layers Total | ~1,200s |
+| Attention (per layer) | ~60s (3137x3137 matrix) |
+| 12 Layers Total | ~726s |
 | Final Classifier | <1s |
 
 ## Kinetics-400 Classes
@@ -187,5 +211,29 @@ Full class list: [Kinetics-400 Labels](https://github.com/deepmind/kinetics-i3d/
 | **QORA-Vision (Video)** | ViViT Base | 89M | 60 MB | Video action classification |
 
 ---
+
+## Platform Support
+
+| Platform | Binary | GPU Backend | Status |
+|----------|--------|-------------|--------|
+| **Windows x86_64** | `qora-vision.exe` | Vulkan | Tested |
+| **Linux x86_64** | `qora-vision` | Vulkan | Supported |
+| **macOS aarch64** | `qora-vision` | Metal | Supported |
+
+## Building from Source
+
+```bash
+cargo build --release                       # CPU
+cargo build --release --features gpu        # GPU (Windows/Linux, Vulkan)
+cargo build --release --features gpu-metal  # GPU (macOS, Metal)
+```
+
+### Dependencies
+
+- `cortex` — Rust deep learning framework (GPU via wgpu/Vulkan/Metal)
+- `half` — F16 support
+- `image` — Image loading (PNG/JPEG)
+- `safetensors` — Weight loading
+- `serde_json` — Config parsing
 
 *Built with QORA - Pure Rust AI Inference*
